@@ -1,5 +1,5 @@
 .App {
-  text-align: center;
+  margin-top: 15px;
 }
 
 .App-logo {
@@ -21,6 +21,19 @@
 
 .App-link {
   color: #61dafb;
+}
+
+.App .navbar-brand {
+  font-weight: bold;
+}
+
+.App .navbar a, .App .navbar a:hover {
+  color: #61dafb;
+  text-decoration: none;
+}
+
+.App .navbar-nav .nav-link, .App .navbar-nav .nav-link:hover, .App .navbar-nav .nav-link.active {
+  color: #fff;
 }
 
 @keyframes App-logo-spin {
