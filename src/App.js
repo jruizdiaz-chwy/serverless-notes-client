@@ -18,8 +18,6 @@ class App extends Component {
   }
 
   async componentDidMount() {
-    console.log(process.env.REACT_APP_FB_APP_ID);
-    
     this.loadFacebookSDK();
 
     try {
