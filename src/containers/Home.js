@@ -1,6 +1,5 @@
 import { API } from 'aws-amplify';
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { ListGroup, ListGroupItem } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import './Home.css';
@@ -15,9 +14,6 @@ export default class Home extends Component {
 	}
 
 	async componentDidMount() {
-		if (!this.props.isAuthenticated)
-			return;
-
 		try {
 			const notes = await this.notes();
 			this.setState({ notes });
@@ -29,9 +25,9 @@ export default class Home extends Component {
 	}
 
 	notes() {
-		return API.get('notes', '/notes');
+		const headers = { 'x-api-key': 'fcdXi7Dj0M5cjcORVc32K7IigvVk3deS42qJ6tHe' };
+		return API.get('notes', '/notes', { headers });
 	}
-
 
 	renderNotesList(notes) {
 		return [{}].concat(notes).map(
@@ -59,29 +55,12 @@ export default class Home extends Component {
 		);
 	}
 
-	renderLander() {
-		return (
-			<div className="lander">
-				<h1>Scratch</h1>
-				<p>A simple note taking app</p>
-				<div>
-        <Link to="/login" className="btn btn-info btn-lg">
-          Login
-        </Link>
-        <Link to="/signup" className="btn btn-success btn-lg">
-          Signup
-        </Link>
-      </div>
-			</div>
-		);
-	}
-
 	renderNotes() {
 		return (
 			<div className="notes">
-				<h1>Your Notes</h1>
+				<h1>Notes</h1>
 				<ListGroup>
-					{!this.state.isLoading && this.renderNotesList(this.state.notes)}
+					{this.renderNotesList(this.state.notes)}
 				</ListGroup>
 			</div>
 		);
@@ -90,7 +69,7 @@ export default class Home extends Component {
 	render() {
 		return (
 			<div className="Home">
-				{this.props.isAuthenticated ? this.renderNotes() : this.renderLander()}
+				{this.renderNotes() }
 			</div>
 		);
 	}

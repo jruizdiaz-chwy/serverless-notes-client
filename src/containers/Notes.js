@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import { Storage, API } from 'aws-amplify';
-import { s3Upload, s3Remove } from "../libs/awsLib";
-import config from '../config';
-import { FormGroup, FormLabel, FormControl } from 'react-bootstrap';
+import { API } from 'aws-amplify';
+import { FormGroup, FormControl } from 'react-bootstrap';
 import LoaderButton from '../components/LoaderButton';
 import './Notes.css';
 
@@ -14,7 +12,6 @@ export default class Notes extends Component {
 		this.state = {
 			note: null,
 			content: '',
-			attachmentURL: '',
 			isLoading: false,
 			isDeleting: false,
 		};
@@ -22,41 +19,34 @@ export default class Notes extends Component {
 
 	async componentDidMount() {
 		let note;
-		let attachmentURL;
 		try {
 			note = await this.getNote();
-			const { content, attachment } = note;
-
-			if (attachment) {
-				attachmentURL = await Storage.vault.get(attachment);
-				console.log(attachmentURL);
-			}
-
-			console.log('attachement retrived');
-
+			const { content } = note;
 			this.setState({
 				note,
-				content,
-				attachmentURL
+				content
 			});
 		} catch (e) {
-			console.log(attachmentURL);
 			alert(e);
 		}
 	}
 
 	getNote() {
-		return API.get('notes', `/notes/${this.props.match.params.id}`);
+		const options = { headers: { 'x-api-key': 'fcdXi7Dj0M5cjcORVc32K7IigvVk3deS42qJ6tHe' } };
+		return API.get('notes', `/notes/${this.props.match.params.id}`, options);
 	}
 
 	saveNote(note) {
+		const headers = { 'x-api-key': 'fcdXi7Dj0M5cjcORVc32K7IigvVk3deS42qJ6tHe' };
 		return API.put('notes', `/notes/${this.props.match.params.id}`, {
+			headers,
 			body: note
 		});
 	}
 
 	deleteNote() {
-		return API.del('notes', `/notes/${this.props.match.params.id}`);
+		const options = { headers: { 'x-api-key': 'fcdXi7Dj0M5cjcORVc32K7IigvVk3deS42qJ6tHe' } };
+		return API.del('notes', `/notes/${this.props.match.params.id}`, options);
 	}
 
 	validateForm() {
@@ -73,30 +63,14 @@ export default class Notes extends Component {
 		});
 	}
 
-	handleFileChange = event => {
-		this.file = event.target.files[0];
-	}
-
 	handleSubmit = async event => {
-		let attachment;
 		event.preventDefault();
-
-		if (this.file && this.file.size > config.MAX_ATTACHMENT_SIZE) {
-			alert(`Please pick a file smaller than ${config.MAX_ATTACHMENT_SIZE / 1000000} MB.`);
-			return;
-		}
 
 		this.setState({ isLoading: true });
 
 		try {
-			if (this.file) {
-				attachment = await s3Upload(this.file);
-				await s3Remove(this.state.note.attachment);
-			}
-
 			await this.saveNote({
-				content: this.state.content,
-				attachment: attachment || this.state.note.attachment
+				content: this.state.content
 			});
 			this.props.history.push('/');
 		} catch (e) {
@@ -119,8 +93,6 @@ export default class Notes extends Component {
 		this.setState({ isDeleting: true });
 
 		try {
-			if (this.state.note.attachment)
-				await s3Remove(this.state.note.attachment);
 			await this.deleteNote();
 			this.props.history.push('/');
 		} catch (e) {
@@ -130,7 +102,7 @@ export default class Notes extends Component {
 	}
 
 	render() {
-		const { content, note, attachmentURL, isLoading, isDeleting } = this.state;
+		const { content, note, isLoading, isDeleting } = this.state;
 		return (
 			<div className="Notes">
 				{note &&
@@ -141,24 +113,6 @@ export default class Notes extends Component {
 								value={content}
 								as="textarea"
 							/>
-						</FormGroup>
-						{note.attachment &&
-							<FormGroup>
-								<FormLabel>Attachment</FormLabel>
-								<p>
-									<a
-										target="_blank"
-										rel="noopener noreferrer"
-										href={attachmentURL}
-									>
-										{this.formatFilename(note.attachment)}
-									</a>
-								</p>
-							</FormGroup>}
-						<FormGroup controlId="file">
-							{!note.attachment &&
-								<FormLabel>Attachment</FormLabel>}
-							<FormControl onChange={this.handleFileChange} type="file" />
 						</FormGroup>
 						<LoaderButton
 							block

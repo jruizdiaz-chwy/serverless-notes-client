@@ -1,10 +1,8 @@
 import { API } from "aws-amplify";
 import React, { Component } from 'react';
-import { FormGroup, FormControl, FormLabel } from 'react-bootstrap';
+import { FormGroup, FormControl } from 'react-bootstrap';
 import LoaderButton from '../components/LoaderButton';
-import config from '../config';
 import './NewNote.css';
-import { s3Upload } from "../libs/awsLib";
 
 export default class NewNote extends Component {
 	constructor(props) {
@@ -34,20 +32,10 @@ export default class NewNote extends Component {
 	handleSubmit = async event => {
 		event.preventDefault();
 
-		if (this.file && this.file.size > config.MAX_ATTACHMENT_SIZE) {
-			alert(`Please pick a file smaller than ${config.MAX_ATTACHMENT_SIZE / 1000000} MB.`);
-			return;
-		}
-
 		this.setState({ isLoading: true });
 
 		try {
-			const attachment = this.file
-				? await s3Upload(this.file)
-				: null;
-
 			await this.createNote({
-				attachment,
 				content: this.state.content
 			});
 			this.props.history.push('/');
@@ -58,7 +46,9 @@ export default class NewNote extends Component {
 	}
 
 	createNote(note) {
+		const headers = { 'x-api-key': 'fcdXi7Dj0M5cjcORVc32K7IigvVk3deS42qJ6tHe' };
 		return API.post('notes', '/notes', {
+			headers,
 			body: note
 		})
 	}
@@ -74,10 +64,6 @@ export default class NewNote extends Component {
 							value={content}
 							as="textarea"
 						/>
-					</FormGroup>
-					<FormGroup controlId="file">
-						<FormLabel>Attachment</FormLabel>
-						<FormControl onChange={this.handleFileChange} type="file" />
 					</FormGroup>
 					<LoaderButton
 						block
