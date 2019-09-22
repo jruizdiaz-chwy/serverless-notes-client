@@ -1,68 +1,128 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Serverless Workshop
 
-## Available Scripts
+Proyecto de ejemplo que demuestra el uso de funciones Lambda con DynamoDB en AWS. Basado en el tutorial [Serverless Stack](http://serverless-stack.com).
 
-In the project directory, you can run:
+# Desarrollo
 
-### `npm start`
+## Setup inicial
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+  **Clonar el proyecto**
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+  Situar la terminal en la carpeta deseada y correr:
+  `git clone {url del proyecto}`
 
-### `npm test`
+  Entrar a la carpeta del proyecto
+  `cd notes-app-api`
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+ **Instalar paquetes**
 
-### `npm run build`
+   Para instalar las dependencias del proyecto:
+  `npm install`
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+## Configurar AWS Amplify
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+  Para poder utilizar los recursos de AWS en nuestra aplicación React, usaremos una librería llamada AWS Amplify.
 
-### `npm run eject`
+  La misma nos provee de algunos módulos simples que facilitarán la conexión a nuestro backend.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+  **Instalar AWS Amplify**
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  `npm install aws-amplify --save`
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+  **Crear un archivo de configuración**
+  Necesitamos los datos que obtuvimos al hacer deploy de nuestra API para poder configurar nuestro cliente.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+  Para ello, crearemos un archivo de configuración en `src/config.js` y agregaremos lo siguiente:
 
-## Learn More
+  ```
+  export default {
+    auth: {
+      ACCESS_KEY_ID: "YOUR_AWS_USER_ACCESS_KEY_ID",
+      SECRET_ACCESS_KEY: "YOUR_AWS_USER_SECRET_ACCESS_KEY"
+    },
+    apiGateway: {
+      REGION: "YOUR_API_GATEWAY_REGION",
+      URL: "YOUR_API_GATEWAY_URL",
+      API_KEY: "YOUR_API_GATEWAY_API_KEY"
+    }
+  };
+  ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+  Donde hay que reemplazar:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+  - YOUR_AWS_USER_ACCESS_KEY_ID por el `access_key_id` provisto al usuario de AWS.
 
-### Code Splitting
+  - YOUR_AWS_USER_SECRET_ACCESS_KEY por el `secret_access_key` provisto al usuario de AWS.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+  - YOUR_API_GATEWAY_REGION por la región de nuestro API Gateway creado en el deploy (en nuestro caso será `us-west-1`).
 
-### Analyzing the Bundle Size
+  - YOUR_API_GATEWAY_URL por la URL de nuestro API Gateway creado en el deploy. En nuestro ejemplo sería: `https://l9xebbjnt8.execute-api.us-west-1.amazonaws.com/dev`
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+  - YOUR_API_GATEWAY_API_KEY por la API KEY generada para nuestro API Gateway en el deploy.
 
-### Making a Progressive Web App
+  **Agregar AWS Amplify**
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+  Ahora configuremos AWS Amplify.
 
-### Advanced Configuration
+  Primero importemos la libreria al comienzo de nuestro `src/.index.js`
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+  `import Amplify from "aws-amplify";`
 
-### Deployment
+  Importemos también nuestro archivo de configuración
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+  `import config from "./config";`
 
-### `npm run build` fails to minify
+  Para inicializar AWS Amplify, agreguemos lo siguiente sobre la línea `ReactDOM.render` en `src/index.js`
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+  ```
+  Amplify.configure({
+    API: {
+      endpoints: [
+        {
+          name: "notes",
+          endpoint: config.apiGateway.URL,
+          region: config.apiGateway.REGION
+        },
+      ],
+      credentials: {
+        accessKeyId: config.auth.ACCESS_KEY_ID,
+        secretAccessKey: config.auth.SECRET_ACCESS_KEY
+      },
+    }
+  });
+  ```
+
+  Amplify se refiere al servicio API Gateway como `API`.
+
+  El `name: "notes"` simplemente le dice a Amplify que queremos nombrar a nuestra API. Amplify permite agregar multiples APIs en una app. En nuestro caso es una sola.
+
+## Deploy del Frontend en S3
+  
+  Nuestra aplicación cliente se encuentra lista para el deploy en S3.
+
+  **Crear un build**
+
+  Para crear un build que empaquete y prepare nuestros assets para ser servidos, simplemente corremos:
+
+  `npm run build`
+
+  Esto crea la carpeta `build/` que subiremos.
+
+  **Subir a S3**
+  
+  Para cargar nuestra app en la nube de AWS, corremos:
+
+  `aws s3 sync build/ s3://YOUR_S3_DEPLOY_BUCKET_NAME`
+
+  Donde YOUR_S3_DEPLOY_BUCKET_NAME` es el nombre de nuestro bucket en S3.
+
+  En caso de que nuestro bucket S3 no esté vacío, o que querramos actualizar el contenido de nuestra aplicación, podemos hacer un re-deploy corriendo:
+
+  `aws s3 sync build/ s3://YOUR_S3_DEPLOY_BUCKET_NAME --delete`
+
+  Aquí, el parámetro --delete le dice a S3 que borre todo lo que no estemos incluyendo en esta versión y ya este subido al bucket.
+
+  **Acceder al cliente**
+
+  Una vez subido, nuestro cliente estará disponible a través de la URL asignada al bucket.
