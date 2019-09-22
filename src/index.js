@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
+import config from "./config";
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
@@ -11,13 +12,13 @@ Amplify.configure({
 		endpoints: [
 			{
 				name: "notes",
-				endpoint: process.env.REACT_APP_API_GW_URL,
-				region: process.env.REACT_APP_API_GW_REGION
+				endpoint: config.apiGateway.URL,
+				region: config.apiGateway.REGION
 			},
 		],
 		credentials: {
-      accessKeyId: process.env.REACT_APP_API_GW_ACCESS_KEY_ID,
-      secretAccessKey: process.env.REACT_APP_API_GW_SECRET_ACCESS_KEY
+      accessKeyId: config.auth.ACCESS_KEY_ID,
+      secretAccessKey: config.auth.SECRET_ACCESS_KEY
     },
 	}
 });

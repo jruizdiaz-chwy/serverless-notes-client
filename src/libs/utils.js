@@ -1,6 +1,8 @@
+import config from  '../config'
+
 export const getInit = (options = {}) => {
   return {
     ...options,
-    headers: { 'x-api-key': process.env.REACT_APP_API_GW_API_KEY }
+    headers: { 'x-api-key': config.apiGateway.API_KEY }
   }
 }
