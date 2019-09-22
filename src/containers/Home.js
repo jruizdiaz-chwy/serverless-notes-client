@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { ListGroup, ListGroupItem } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import './Home.css';
+import { getInit } from '../libs/utils';
 
 export default class Home extends Component {
 	constructor(props) {
@@ -25,8 +26,7 @@ export default class Home extends Component {
 	}
 
 	notes() {
-		const headers = { 'x-api-key': 'fcdXi7Dj0M5cjcORVc32K7IigvVk3deS42qJ6tHe' };
-		return API.get('notes', '/notes', { headers });
+		return API.get('notes', '/notes', getInit());
 	}
 
 	renderNotesList(notes) {

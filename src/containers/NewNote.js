@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { FormGroup, FormControl } from 'react-bootstrap';
 import LoaderButton from '../components/LoaderButton';
 import './NewNote.css';
+import { getInit } from "../libs/utils";
 
 export default class NewNote extends Component {
 	constructor(props) {
@@ -46,11 +47,7 @@ export default class NewNote extends Component {
 	}
 
 	createNote(note) {
-		const headers = { 'x-api-key': 'fcdXi7Dj0M5cjcORVc32K7IigvVk3deS42qJ6tHe' };
-		return API.post('notes', '/notes', {
-			headers,
-			body: note
-		})
+		return API.post('notes', '/notes', getInit({ body: note }))
 	}
 
 	render() {

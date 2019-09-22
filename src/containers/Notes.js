@@ -3,6 +3,7 @@ import { API } from 'aws-amplify';
 import { FormGroup, FormControl } from 'react-bootstrap';
 import LoaderButton from '../components/LoaderButton';
 import './Notes.css';
+import { getInit } from '../libs/utils';
 
 export default class Notes extends Component {
 	constructor(props) {
@@ -32,21 +33,15 @@ export default class Notes extends Component {
 	}
 
 	getNote() {
-		const options = { headers: { 'x-api-key': 'fcdXi7Dj0M5cjcORVc32K7IigvVk3deS42qJ6tHe' } };
-		return API.get('notes', `/notes/${this.props.match.params.id}`, options);
+		return API.get('notes', `/notes/${this.props.match.params.id}`, getInit());
 	}
 
 	saveNote(note) {
-		const headers = { 'x-api-key': 'fcdXi7Dj0M5cjcORVc32K7IigvVk3deS42qJ6tHe' };
-		return API.put('notes', `/notes/${this.props.match.params.id}`, {
-			headers,
-			body: note
-		});
+		return API.put('notes', `/notes/${this.props.match.params.id}`, getInit({ body: note }));
 	}
 
 	deleteNote() {
-		const options = { headers: { 'x-api-key': 'fcdXi7Dj0M5cjcORVc32K7IigvVk3deS42qJ6tHe' } };
-		return API.del('notes', `/notes/${this.props.match.params.id}`, options);
+		return API.del('notes', `/notes/${this.props.match.params.id}`, getInit());
 	}
 
 	validateForm() {
